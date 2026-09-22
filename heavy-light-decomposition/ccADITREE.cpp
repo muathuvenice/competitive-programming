@@ -1,0 +1,238 @@
+#include <bits/stdc++.h>
+/*
+I might never be your knight in shining armor
+I might never be the one you take home to mother
+And I might never be the one who brings you flowers
+But I can be the one, be the one tonight
+
+When I first saw you
+From across the room
+I could tell that you were curious
+Oh, yeah
+
+Girl, I hope you're sure
+What you're looking for
+'Cause I'm not good at making promises
+
+But if you like causing trouble up in hotel rooms
+And if you like having secret little rendezvous
+If you like to do the things you know that we shouldn't do
+Then, baby, I'm perfect
+Baby, I'm perfect for you
+
+And if you like midnight driving with the windows down
+And if you like going places we can't even pronounce
+If you like to do whatever you've been dreaming about
+Then, baby, you're perfect
+Baby, you're perfect
+So let's start right now
+
+I might never be the hands you put your heart in
+Or the arms that hold you any time you want them
+But that don't mean that we can't live here in the moment
+'Cause I can be the one you love from time to time
+
+When I first saw you
+From across the room
+I could tell that you were curious
+Oh, yeah
+
+Girl, I hope you're sure
+What you're looking for
+'Cause I'm not good at making promises
+
+But if you like causing trouble up in hotel rooms
+And if you like having secret little rendezvous
+If you like to do the things you know that we shouldn't do
+Then, baby, I'm perfect
+Baby, I'm perfect for you
+
+And if you like midnight driving with the windows down
+And if you like going places we can't even pronounce
+If you like to do whatever you've been dreaming about
+Then, baby, you're perfect
+Baby, you're perfect
+So let's start right now
+
+And if you like cameras flashing every time we go out
+Oh, yeah
+And if you're looking for someone to write your break-up songs about
+Baby, I'm perfect
+And, baby, we're perfect
+
+If you like causing trouble up in hotel rooms
+And if you like having secret little rendezvous
+If you like to do the things you know that we shouldn't do
+Then, baby, I'm perfect
+Baby, I'm perfect for you
+
+And if you like midnight driving with the windows down
+And if you like going places we can't even pronounce
+If you like to do whatever you've been dreaming about
+Then, baby, you're perfect
+Baby, you're perfect
+So let's start right now
+*/
+using namespace std;
+#define F first
+#define S second
+#define FOR(i, a, b) for(int i = (a), _b = (b); i <= _b; ++i)
+#define REP(i, a, b) for(int i = (a), _b = (b); i >= _b; --i)
+#define mp make_pair
+#define all(v) v.begin(), v.end()
+#define uni(v) v.erase(unique(all(v)), v.end())
+#define Bit(x, i) ((x >> (i)) & 1)
+#define Mask(i) (1 << (i))
+#define Cnt(x) __builtin_popcount(x)
+#define Cntll(x) __builtin_popcountll(x)
+#define Ctz(x) __builtin_ctz(x) // so luong so 0 tinh tu ben phai
+#define Ctzll(x) __builtin_ctzll(x)
+#define Clz(x) __builtin_clz(x) // so luong so 0 tinh tu ben trai
+#define Clzll(x) __builtin_clzll(x)
+inline bool maximize(int &u, int v){
+    return v > u ? u = v, true : false;
+}
+inline bool minimize(int &u, int v){
+    return v < u ? u = v, true : false;
+}
+inline bool maximizell(long long &u, long long v){
+    return v > u ? u = v, true : false;
+}
+inline bool minimizell(long long &u, long long v){
+    return v < u ? u = v, true : false;
+}
+const int mod = 1e9 + 7;
+inline int fastPow(int a, int n){
+    if(n == 0) return 1;
+    int t = fastPow(a, n >> 1);
+    t = 1ll * t * t % mod;
+    if(n & 1) t = 1ll * t * a % mod;
+    return t;
+}
+inline void add(int &u, int v){
+    u += v;
+    if(u >= mod) u -= mod;
+}
+inline void sub(int &u, int v){
+    u -= v;
+    if(u < 0) u += mod;
+}
+const int maxN = 250000 + 5;
+const int inf = 1e9;
+const long long infll = 1e18;
+int n, q;
+vector<int> adj[maxN];
+int top[maxN], par[maxN], chain[maxN], curChain = 1, curLab = 1, sz[maxN], lab[maxN];
+void dfs(int u = 1){
+    sz[u] = 1;
+    for(int v : adj[u]){
+        if(v == par[u]) continue;
+        par[v] = u;
+        dfs(v);
+        sz[u] += sz[v];
+    }
+}
+void hld(int u = 1){
+    if(top[curChain] == 0) top[curChain] = u;
+    chain[u] = curChain;
+    lab[u] = curLab;
+    ++curLab;
+    int hv = 0;
+    for(int v : adj[u]){
+        if(v != par[u] && sz[v] > sz[hv]) hv = v;
+    }
+    if(hv) hld(hv);
+    for(int v : adj[u]){
+        if(v != par[u] && v != hv){
+            ++curChain;
+            hld(v);
+        }
+    }
+}
+int it[maxN << 2], sum[maxN << 2];
+bool lz[maxN << 2];
+void build(int id, int l, int r){
+    it[id] = lz[id] = 0;
+    if(l == r){
+        sum[id] = 1;
+        return;
+    }
+    int mid = l + r >> 1;
+    build(id << 1, l, mid);
+    build(id << 1 | 1, mid + 1, r);
+    sum[id] = sum[id << 1] + sum[id << 1 | 1];
+}
+void push(int id){
+    if(!lz[id]) return;
+    lz[id << 1] ^= 1;
+    lz[id << 1 | 1] ^= 1;
+    it[id << 1] = sum[id << 1] - it[id << 1];
+    it[id << 1 | 1] = sum[id << 1 | 1] - it[id << 1 | 1];
+    lz[id] = 0;
+    return;
+}
+void update(int id, int l, int r, int u, int v){
+    if(l > v || r < u) return;
+    if(l >= u && r <= v){
+        it[id] = sum[id] - it[id];
+        lz[id] ^= 1;
+        return;
+    }
+    int mid = l + r >> 1;
+    push(id);
+    update(id << 1, l, mid, u, v);
+    update(id << 1 | 1, mid + 1, r, u, v);
+    it[id] = it[id << 1] + it[id << 1 | 1];
+}
+void query(int u, int v){
+    while(chain[u] != chain[v]){
+        if(chain[u] < chain[v]) swap(u, v);
+        update(1, 1, n, lab[top[chain[u]]], lab[u]);
+        u = par[top[chain[u]]];
+    }
+    if(u != v) update(1, 1, n, min(lab[u], lab[v]) + 1, max(lab[u], lab[v]));
+}
+void process(){
+    cin >> n ;
+    FOR(i, 1, n)adj[i].clear(), par[i] = 0, top[i] = 0;
+    curChain = 1, curLab = 1;
+    FOR(i, 1, n - 1){
+        int u, v;
+        cin >> u >> v;
+        adj[u].emplace_back(v);
+        adj[v].emplace_back(u);
+    }
+    dfs();
+//    FOR(i, 1, n)cout << i << ' ' << par[i] << '\n';
+    hld();
+    build(1, 1, n);
+    cin >> q;
+    while(q--){
+        int u, v;
+        cin >> u >> v;
+        query(u, v);
+        cout << it[1] << '\n';
+    }
+}
+#define LOVE ""
+int main(){
+    if(fopen(LOVE".inp", "r")){
+        freopen(LOVE".inp", "r", stdin);
+        freopen(LOVE".out", "w", stdout);
+    }
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+
+    int t = 1;
+//    cin >> t;
+    while(t--)
+        process();
+//    cerr << '\n' << "Time elapsed: " << (1.0 * clock() / CLOCKS_PER_SEC) << " s\n" ;
+    return 0;
+}
+
+
+
+
+
